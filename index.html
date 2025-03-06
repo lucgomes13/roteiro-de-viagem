@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>WanderList - Seu Planejador de Viagens</title>
+	<style>
+		body {
+			font-family: 'Arial', sans-serif;
+			margin: 0;
+			padding: 0;
+			background-color: #f5f5f5;
+			color: #333;
+		}
+
+		.navbar {
+			background: #2c3e50;
+			padding: 1rem;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.navbar a {
+			color: white;
+			margin: 0 15px;
+			text-decoration: none;
+			font-weight: bold;
+		}
+
+		.container {
+			padding: 20px;
+			max-width: 1200px;
+			margin: 0 auto;
+		}
+
+		.section {
+			background: white;
+			padding: 2rem;
+			border-radius: 8px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+			margin-bottom: 20px;
+		}
+
+		.form-group {
+			margin-bottom: 15px;
+		}
+
+		.btn {
+			background: #3498db;
+			color: white;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+		}
+
+		.experience-card {
+			border-bottom: 1px solid #eee;
+			padding: 15px 0;
+		}
+
+		.flight-alert {
+			background: #ffeaa7;
+			padding: 15px;
+			border-radius: 4px;
+			margin-bottom: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="navbar">
+		<h1>🗺️ WanderList</h1>
+		<div>
+			<a href="#" onclick="showSection('roteiros')">Roteiros</a>
+			<a href="#" onclick="showSection('experiencias')">Experiências</a>
+			<a href="#" onclick="showSection('alertas')">Alertas</a>
+			<button class="btn" onclick="toggleLogin()">Entrar/Cadastrar</button>
+		</div>
+	</div>
+
+	<div class="container">
+		<!-- Seção de Roteiros -->
+		<div id="roteiros" class="section">
+			<h2>_planejar Roteiro</h2>
+			<div class="form-group">
+				<label>Destino:</label>
+				<input type="text" id="destino" placeholder="Ex: Paris, França">
+            </div>
+				<div class="form-group">
+					<label>Datas:</label>
+					<input type="date" id="data-inicio">
+					<input type="date" id="data-fim">
+            </div>
+					<div class="form-group">
+						<label>Interesses:</label>
+						<select multiple id="interesses">
+                    <option>Cultura</option>
+                    <option>Gastronomia</option>
+                    <option>Aventura</option>
+                    <option>Praias</option>
+                </select>
+					</div>
+					<button class="btn" onclick="salvarRoteiro()">Salvar Roteiro</button>
+					<div id="itinerario" style="margin-top: 20px;"></div>
+				</div>
+
+				<!-- Seção de Experiências -->
+				<div id="experiencias" class="section" style="display:none">
+					<h2>Compartilhar Experiência</h2>
+					<div class="form-group">
+						<textarea id="nova-experiencia" placeholder="Conte sua experiência..." rows="4"></textarea>
+					</div>
+					<button class="btn" onclick="compartilharExperiencia()">Compartilhar</button>
+
+					<h3>Últimas Experiências</h3>
+					<div id="lista-experiencias"></div>
+				</div>
+
+				<!-- Seção de Alertas -->
+				<div id="alertas" class="section" style="display:none">
+					<h2>Configurar Alertas de Passagens</h2>
+					<div class="form-group">
+						<label>Origem:</label>
+						<input type="text" id="origem-voo" placeholder="Ex: São Paulo">
+            </div>
+						<div class="form-group">
+							<label>Destino:</label>
+							<input type="text" id="destino-voo" placeholder="Ex: Nova York">
+            </div>
+							<div class="form-group">
+								<label>Data Alvo:</label>
+								<input type="date" id="data-voo">
+            </div>
+								<button class="btn" onclick="criarAlerta()">Criar Alerta</button>
+
+								<h3>Seus Alertas</h3>
+								<div id="lista-alertas"></div>
+							</div>
+						</div>
+
+						<script>
+							// Sistema de navegação
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        // Roteiros
+        function salvarRoteiro() {
+            const destino = document.getElementById('destino').value;
+            const inicio = document.getElementById('data-inicio').value;
+            const fim = document.getElementById('data-fim').value;
+            const interesses = Array.from(document.getElementById('interesses').selectedOptions).map(opt => opt.text);
+            
+            const itinerarioDiv = document.getElementById('itinerario');
+            itinerarioDiv.innerHTML += `
+                <div class="flight-alert">
+                    <strong>${destino}</strong> (${inicio} até ${fim})<br>
+                    Interesses: ${interesses.join(', ')}
+                </div>
+            `;
+        }
+
+        // Experiências
+        let experiencias = JSON.parse(localStorage.getItem('experiencias')) || [];
+        
+        function compartilharExperiencia() {
+            const texto = document.getElementById('nova-experiencia').value;
+            if(texto) {
+                experiencias.push({
+                    usuario: 'Viajante',
+                    conteudo: texto,
+                    data: new Date().toLocaleDateString()
+                });
+                localStorage.setItem('experiencias', JSON.stringify(experiencias));
+                atualizarExperiencias();
+            }
+        }
+
+        function atualizarExperiencias() {
+            const lista = document.getElementById('lista-experiencias');
+            lista.innerHTML = experiencias.map(exp => `
+                <div class="experience-card">
+                    <strong>${exp.usuario}</strong> - ${exp.data}<br>
+                    ${exp.conteudo}
+                </div>
+            `).join('');
+        }
+        atualizarExperiencias();
+
+        // Alertas
+        let alertas = JSON.parse(localStorage.getItem('alertas')) || [];
+        
+        function criarAlerta() {
+            const origem = document.getElementById('origem-voo').value;
+            const destino = document.getElementById('destino-voo').value;
+            const data = document.getElementById('data-voo').value;
+            
+            alertas.push({ origem, destino, data });
+            localStorage.setItem('alertas', JSON.stringify(alertas));
+            atualizarAlertas();
+        }
+
+        function atualizarAlertas() {
+            const lista = document.getElementById('lista-alertas');
+            lista.innerHTML = alertas.map(alt => `
+                <div class="flight-alert">
+                    ✈️ ${alt.origem} → ${alt.destino}<br>
+                    Data Alvo: ${alt.data}
+                </div>
+            `).join('');
+        }
+        atualizarAlertas();
+
+        // Login mock
+        function toggleLogin() {
+            alert('Funcionalidade de login em desenvolvimento');
+        }
+						</script>
+</body>
+
+</html>
